@@ -7,7 +7,7 @@ var rename      = require('gulp-rename');
 var es          = require('event-stream');
 var glob        = require('glob'); 
 
-var js_path = './js/*.js';
+var js_path = './js/main.js';
 
 gulp.task('default', function() {
 });
@@ -31,7 +31,7 @@ gulp.task('browserSync', function() {
 
 gulp.task('watch', ['browserSync', 'sass'], function (){
   gulp.watch('app/scss/**/*.scss', ['sass']);
-  gulp.watch(js_path, ['browserify']);
+  gulp.watch('js/*.js', ['browserify']);
   gulp.watch('app/**/*.html', browserSync.reload);   
   // Other watchers
 });
