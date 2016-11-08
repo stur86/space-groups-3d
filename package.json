@@ -1,0 +1,35 @@
+{
+  "name": "space-groups-3d",
+  "version": "0.1.0",
+  "description": "A THREE.js visualisation of crystallographic space groups",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stur86/space-groups-3d.git"
+  },
+  "keywords": [
+    "chemistry",
+    "visualisation",
+    "symmetry",
+    "space",
+    "groups"
+  ],
+  "author": "Simone Sturniolo",
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/stur86/space-groups-3d/issues"
+  },
+  "homepage": "https://github.com/stur86/space-groups-3d#readme",
+  "devDependencies": {
+    "browser-sync": "^2.17.5",
+    "gulp": "^3.9.1",
+    "gulp-sass": "^2.3.2",
+    "jquery": "^3.1.1",
+    "three": "^0.82.1",
+    "three-orbit-controls": "^72.0.0",
+    "tween.js": "^16.3.5"
+  }
+}
