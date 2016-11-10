@@ -13,10 +13,10 @@ var base_scale = 0.01;
 var scale_fac = 5;
 
 // Lattice parameters
-var lattice_abc = [[1, 1, 2], [90, 90, 120]]; // Starting with a cube
+var lattice_abc = [[1, 1, 1], [90, 90, 90]]; // Starting with a cube
 var lattice_cart;
 // Symmetry group
-var current_group = 'P -1';
+var current_group = "I 4/m m m";
 
 // Cell box
 var boxGeom, boxMat, boxMesh;
@@ -121,21 +121,69 @@ function visualiseSymmetry(xyz) {
     var y0 = xyz[1];
     var z0 = xyz[2];
 
-    var sprite = pointArr[x0][y0][z0].sprite;
+    // Do nothing if there's already a tween
+    if (pointArr[x0][y0][z0].tween)
+        return;
 
-    var tween = new TWEEN.Tween({s: base_scale})
-                    .to({s: base_scale*scale_fac}, anim_t)
-                    .easing(TWEEN.Easing.Elastic.InOut)
-                    .onUpdate( function () {
-                        sprite.scale.set(this.s, this.s, this.s);
-                    })
-                    .chain(new TWEEN.Tween({s: base_scale*scale_fac})
-                        .to({s: base_scale}, anim_t)
+    // So, let's iterate over this spacegroup's operators
+    var ops = SYMDATA[current_group].ops;
+
+    var v0 = new THREE.Vector3(x0, y0, z0)
+                      .divideScalar(lsize)
+                      .addScalar(0.5*(1.0/lsize-1.0));
+
+    var createUpdFunc = function(x, y, z) {
+        return function() {
+            pointArr[x][y][z].sprite.scale.set(this.sc, this.sc, this.sc);
+            pointArr[x][y][z].sprite.material.color.setHSL(this.h, this.s, this.l);
+        }
+    }
+
+    var createEndFunc = function(x, y, z) {
+        return function() {
+            pointArr[x][y][z].tween = null;
+        }
+    }
+
+    for (var i = 0; i < ops.length; ++i) {
+
+        var v1 = v0.clone().applyMatrix3(ops[i][0])
+                           .add(ops[i][1])
+                           .addScalar(0.5*(1.0-1.0/lsize))
+                           .multiplyScalar(lsize);
+
+        var x1 = Math.round(v1.x)%lsize;
+        var y1 = Math.round(v1.y)%lsize;
+        var z1 = Math.round(v1.z)%lsize;
+
+        pointArr[x1][y1][z1].tween = new TWEEN.Tween({sc: base_scale,
+                                                      h: i/ops.length,
+                                                      s: 0.0,
+                                                      l: 1.0
+                                                      })
+                        .to({sc: base_scale*scale_fac,
+                             h: i/ops.length,
+                             s: i > 0? 0.5 : 0.0,
+                             l: i > 0? 0.7 : 1.0
+                             }, anim_t)
                         .easing(TWEEN.Easing.Elastic.InOut)
-                        .onUpdate( function () {
-                            sprite.scale.set(this.s, this.s, this.s);
-                        }))
-                    .start();
+                        .onUpdate(createUpdFunc(x1, y1, z1))
+                        .chain(new TWEEN.Tween({sc: base_scale*scale_fac,
+                                                h: i/ops.length,
+                                                s: i > 0? 0.5 : 0.0,
+                                                l: i > 0? 0.7 : 1.0
+                                                })
+                            .to({sc: base_scale,
+                                 h: i/ops.length,
+                                 s: 0.0,
+                                 l: 1.0
+                                 }, anim_t)
+                            .easing(TWEEN.Easing.Elastic.InOut)
+                            .onUpdate(createUpdFunc(x1, y1, z1))
+                            .onComplete(createEndFunc(x1, y1, z1)))
+                        .start();
+    }
+
 }
 
 exports.init = function() {
@@ -177,5 +225,6 @@ exports.init = function() {
             return;
         visualiseSymmetry(i[0].object.data_index);
     }, group);
+
 }
 
